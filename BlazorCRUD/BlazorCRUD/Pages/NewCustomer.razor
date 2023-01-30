@@ -1,0 +1,65 @@
+﻿@page "/NewCustomer"
+@page "/NewCustomer/{id:int}"
+
+@using Data;
+@using Interfaces;
+@inject ICustomerService CustomerService
+@inject NavigationManager navigationManager
+
+<h1>New Customer</h1>
+<EditForm Model="@customer" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="row content">
+        <div class="col-md-1"><label for="Nombre">Nombre</label></div>
+        <div class="col-md-2"><InputText id="name" @bind-Value="customer.Nombre" /></div>
+        <div class="col-md-4"><ValidationMessage For="@(() => customer.Nombre)" /></div>
+    </div>
+    <div class="row content">
+        <div class="col-md-1"><label for="Email">Email</label></div>
+        <div class="col-md-2"><InputText id="EmailAddress" @bind-Value="customer.Email" /></div>
+        <div class="col-md-4"><ValidationMessage For="@(()=>customer.Email)" /></div>
+    </div>
+    <div class="row content">
+        <div class="col-md-1"><label for="Telefono">Phone</label></div>
+        <div class="col-md-2"><InputText id="PhoneNumber" @bind-Value="customer.Telefono" /></div>
+        <div class="col-md-4"><ValidationMessage For="@(()=>customer.Telefono)" /></div>
+    </div>
+    <div class="row content">
+        <div class="col-md-1">
+            <input type="submit" class="btn btn-primary" value="Save" @onclick="Save" />
+        </div>
+        <div class="col-md-2">
+            <input type="button" class="btn btn-danger" value="Cancelar" @onclick="Cancel" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    Customer customer = new Customer();
+
+    protected async Task Save()
+    {
+        await CustomerService.SaveCustomer(customer).ConfigureAwait(false);
+        navigationManager.NavigateTo("/CustomerList");
+    }
+
+    protected void Cancel()
+    {
+        navigationManager.NavigateTo("/CustomerList");
+    }
+
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine("OnValidSubmit");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (id > 0)
+        {
+            customer = await CustomerService.GetCustomerById(id).ConfigureAwait(false);
+        }
+    }
+}

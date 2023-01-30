@@ -1,0 +1,57 @@
+﻿@page "/CustomerList"
+@using Data
+@using Interfaces
+@inject ICustomerService CustomerService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JsRuntime
+
+<h1>CustomerList</h1>
+
+@if (customers == null)
+{
+    <p><em>Loading....</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Customer customer in customers)
+            {
+                <tr>
+                    <td>@customer.Nombre</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.Telefono</td>
+                    <td><a href="/NewCustomer/@customer.Id" class="btn btn-primary m-1">Editar</a></td>
+                    <td><input type="submit" class="btn btn-danger" value="Eliminar" @onclick="(()=>DeleteCustomer(customer.Id))" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private IEnumerable<Customer> customers;
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerService.GetCustomers();
+    }
+
+    protected async void DeleteCustomer(int customerId)
+    {
+        bool confirm = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to remove the customer?").ConfigureAwait(false);
+        if (confirm)
+        {
+            await CustomerService.DeleteCustomer(customerId).ConfigureAwait(false);
+            navigationManager.NavigateTo("/CustomerList");
+        }
+
+    }
+}
